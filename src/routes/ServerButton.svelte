@@ -2,13 +2,15 @@
     export let name: string;
     export let ip: string;
 
+    export let onclick: () => void;
+
     function loadServer() {
         console.log("Loading server");
 
     }
 </script>
 
-<button class="server-button">
+<button class="server-button" on:click={() => {onclick(ip, name)}}>
     <h3>{name}</h3>
     <h2>{ip}</h2>
 </button>

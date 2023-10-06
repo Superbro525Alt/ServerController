@@ -3,6 +3,9 @@
 	import Popup from "./Popup.svelte";
 	import CustomMenu from "./CustomMenu.svelte";
 
+	// import sockets
+
+
 	let servers = [{
 		name: "Server 1",
 		ip: "202.90.245.22:6161"
@@ -22,6 +25,10 @@
 
 	function reset_popup() {
 		create_server_popup_visible = false;
+	}
+
+	function load_server(ip: string, name: string) {
+		console.log(name, ip);
 	}
 
 	function add_server_to_list() {
@@ -56,7 +63,7 @@
 	{/if}
 	{#if servers.length > 0}
 		{#each servers as server}
-			<ServerButton name={server.name} ip={server.ip} />
+			<ServerButton name={server.name} ip={server.ip} onclick={load_server}/>
 		{/each}
 	{/if}
 
