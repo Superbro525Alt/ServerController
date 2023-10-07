@@ -3,21 +3,28 @@
 	import Popup from "./Popup.svelte";
 	import CustomMenu from "./CustomMenu.svelte";
 
-	// import sockets
+	// import client/socket from socketio
+	import ioClient from 'socket.io-client';
+
+
+
 
 
 	let servers = [{
 		name: "Server 1",
 		ip: "202.90.245.22:6161"
 	}, {
-		name: "Server 1",
-		ip: "202.90.245.22:6161"
+		name: "Dev",
+		ip: "127.0.0.1:6161"
 	}];
 
 	let create_server_popup_visible = false;
 
 	let server_name = "";
 	let server_ip = "";
+	let server_password = "";
+
+	let show_load_server_popup = false;
 
 	function add_server() {
 		create_server_popup_visible = !create_server_popup_visible;
@@ -28,7 +35,38 @@
 	}
 
 	function load_server(ip: string, name: string) {
-		console.log(name, ip);
+		const socket = ioClient(ip);
+
+				// check if server is alive
+		socket.on('connect_error', (err: any) => {
+			console.log("Error connecting to server");
+			console.log(err);
+			var error = document.querySelector(".error");
+			error.innerHTML = "Error connecting to server: Server not alive";
+			socket.close();
+		});
+
+		socket.on('connect', () => {
+			console.log("Connected to server");
+			socket.emit('password', server_password);
+		});
+
+		socket.on('password', (correct: boolean) => {
+			if (correct) {
+				console.log("Password correct");
+			} else {
+				console.log("Password incorrect");
+				var error = document.querySelector(".error");
+				error.innerHTML = "Error connecting to server: Password incorrect";
+				socket.close();
+			}
+		});
+
+
+	}
+
+	function load_server_popup(ip: string, name: string) {
+		show_load_server_popup = true;
 	}
 
 	function add_server_to_list() {
@@ -53,17 +91,25 @@
 
 	{#if create_server_popup_visible}
 		<Popup title="Add Server" id="Add Server" onClose={reset_popup}>
-			<input type="text" placeholder="IP" bind:value={server_ip} />
 			<input type="text" placeholder="Name" bind:value={server_name} />
+			<input type="text" placeholder="IP" bind:value={server_ip} />
 			<button on:click={add_server_to_list} >Add Server</button>
 		</Popup>
 	{/if}
+	{#if show_load_server_popup}
+		<Popup title="Load Server" id="Load Server" onClose={() => show_load_server_popup = false}>
+			<input type="text" placeholder="Password" bind:value={server_password} />
+			<button on:click={() => load_server(server_ip, server_name)} >Load Server</button>
+			<p class="error"></p>
+		</Popup>
+	{/if}
+
 	{#if servers.length === 0}
 		<p>No servers found</p>
 	{/if}
 	{#if servers.length > 0}
 		{#each servers as server}
-			<ServerButton name={server.name} ip={server.ip} onclick={load_server}/>
+			<ServerButton name={server.name} ip={server.ip} onclick={load_server_popup}/>
 		{/each}
 	{/if}
 
@@ -73,6 +119,10 @@
 </section>
 
 <style>
+	.error {
+		color: red;
+		margin-bottom: 0;
+	}
 .server-holder {
 	display: flex;
 	flex-direction: row;
