@@ -3,7 +3,7 @@
 </script>
 
 <header>
-    <h1>Select Server</h1>
+    <h1>Server Controller</h1>
 </header>
 
 <style>

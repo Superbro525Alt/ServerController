@@ -8,6 +8,10 @@
 
 
 	let loaded_server = false;
+	let loaded_server_data = {
+		name: "",
+		ip: ""
+	};
 
 	let servers = [{
 		name: "Server 1",
@@ -58,6 +62,28 @@
 				console.log("Password correct");
 				var error = document.querySelector(".error");
 				error.innerHTML = "";
+				loaded_server = true;
+				loaded_server_data = {
+					name: name,
+					ip: ip
+				};
+
+
+				socket.on('disconnect', () => {
+					console.log("Disconnected from server");
+					loaded_server = false;
+					loaded_server_data = {
+						name: "",
+						ip: ""
+					};
+				});
+
+				// get if server sends a message
+				socket.on('data', (services: string) => {
+					var s = JSON.parse(services);
+
+					console.log(s);
+				});
 			} else {
 				console.log("Password incorrect");
 				var error = document.querySelector(".error");
@@ -88,10 +114,15 @@
 
 </script>
 
+
 <svelte:head>
 	<title>Select Server</title>
 	<meta name="description" content="Server Controller" />
 </svelte:head>
+
+{#if !loaded_server}
+	<h2>Select Server</h2>
+{/if}
 
 <section class="server-holder">
 	{#if !loaded_server}
@@ -131,6 +162,13 @@
 </section>
 
 <style>
+
+	h2 {
+		margin-bottom: 1%;
+		font-size: 30px;
+		text-align: center;
+		margin-top: 0;
+	}
 	.error {
 		color: red;
 		margin-bottom: 0;
