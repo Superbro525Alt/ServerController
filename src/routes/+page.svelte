@@ -10,7 +10,7 @@
 		PenSolid,
 		DatabaseSolid,
 		DotsHorizontalOutline,
-		CheckCircleSolid
+		CheckCircleSolid, ExclamationCircleSolid, CloseCircleSolid
 	} from "flowbite-svelte-icons";
 
 	import Highlight from "svelte-highlight";
@@ -58,6 +58,8 @@
 	let started_service_success = false;
 	let started_service_fail = false;
 
+	let error_in_service = "";
+	let log_in_service = "";
 
 	function add_server() {
 		create_server_popup_visible = !create_server_popup_visible;
@@ -136,11 +138,21 @@
 			}, 3000);
 		});
 
-		socket.on('service_log', (log: string) => {
+		socket.on('service_log', (log: object) => {
 			console.log(log);
+			if (log.type == "error") {
+				error_in_service = log.data;
+			} else {
+				log_in_service = log.data;
+			}
+
+			console.log(error_in_service);
+
+			setTimeout(() => {
+				//error_in_service = "";
+				//log_in_service = "";
+			}, 3000);
 		});
-
-
 	}
 
 	function load_server_popup(ip: string, name: string) {
@@ -242,6 +254,31 @@
 				<span class="sr-only">Check icon</span>
 			</svelte:fragment>
 			Service failed to start
+		</Toast>
+	</div>
+{/if}
+
+{#if error_in_service != ""}
+	<div class="fixed bottom-0 right-0 mb-4 mr-4" style="min-width: 15%; margin-right: 0">
+		<Toast color="red" align={false}>
+			<svelte:fragment slot="icon">
+				<CloseCircleSolid  class="w-5 h-5" />
+				<span class="sr-only">Error icon</span>
+			</svelte:fragment>
+			{error_in_service}
+		</Toast>
+	</div>
+{/if}
+
+{#if log_in_service != ""}
+
+	<div class="fixed bottom-0 right-0 mb-4 mr-4" style="min-width: 15%; margin-right: 0">
+		<Toast color="red" align={false}>
+			<svelte:fragment slot="icon">
+				<ExclamationCircleSolid  class="w-5 h-5" />
+				<span class="sr-only">Info icon</span>
+			</svelte:fragment>
+			{log_in_service}
 		</Toast>
 	</div>
 {/if}
